@@ -22,6 +22,7 @@ constructor(public http :HttpClient) { }
     let loginDTO = new LoginDTO(username, pw);
     let x = await lastValueFrom(this.http.post<any>("https://localhost:7055/api/Users/Login", loginDTO));
     console.log(x);
+    localStorage.setItem("token", x.token);
 
   }
 
