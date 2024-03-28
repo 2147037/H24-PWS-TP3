@@ -58,8 +58,8 @@ namespace FlappyBird.Controllers
                 SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8
                     .GetBytes("LooOOongue Phrase SiNoN Ça ne Marchera PaAaAAAaAas !"));
                 JwtSecurityToken token = new JwtSecurityToken(
-                    issuer: "http://localhost:4200",
-                    audience: "https://localhost:",
+                    issuer: "http://localhost:5221",
+                    audience: "http://localhost:4200",
                     claims: authClaims,
                     expires: DateTime.Now.AddMinutes(30),
                     signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)

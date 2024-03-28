@@ -1,8 +1,9 @@
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule, HttpHeaderResponse, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { RegisterDTO } from '../models/RegisterDTO';
 import { lastValueFrom } from 'rxjs';
 import { LoginDTO } from '../models/LoginDTO';
+import { Score } from '../models/score';
 
 @Injectable({
   providedIn: 'root'
@@ -22,8 +23,24 @@ constructor(public http :HttpClient) { }
     let loginDTO = new LoginDTO(username, pw);
     let x = await lastValueFrom(this.http.post<any>("http://localhost:5221/api/Users/Login", loginDTO));
     console.log(x);
-    localStorage.setItem("token", x.token);
+    sessionStorage.setItem("token", x.token);
 
+  }
+
+  async envoyerScore(inputScore : string, inputTemps : string): Promise<void>{
+    let token = sessionStorage.getItem("token");
+    let httpOptions = {
+      headers: new HttpHeaders({
+        'Content-Type' : 'application/json',
+        'Authorization' : 'Bearer '+ token
+      })
+    };
+
+    let scoreTrans = new Score(0,null, null, inputTemps, Number(inputScore), false );
+    console.log(httpOptions);
+    console.log(scoreTrans);
+     let x = await lastValueFrom(this.http.post<any>("http://localhost:5221/api/Scores/PostScore", scoreTrans, httpOptions));
+     console.log(x);
   }
 
 }

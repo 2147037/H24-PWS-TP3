@@ -7,11 +7,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FlappyBird.Data;
 using FlappyBird.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace FlappyBird.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class ScoresController : ControllerBase
     {
         private readonly FlappyBirdContext _context;
@@ -22,8 +25,9 @@ namespace FlappyBird.Controllers
         }
 
         // GET: api/Scores
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Score>>> GetScore()
+        public async Task<ActionResult<IEnumerable<Score>>> GetPublicScores()
         {
           if (_context.Score == null)
           {
@@ -32,51 +36,19 @@ namespace FlappyBird.Controllers
             return await _context.Score.ToListAsync();
         }
 
-        // GET: api/Scores/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Score>> GetScore(int id)
+        [HttpGet]
+        public async Task<ActionResult<Score>> GeyMyScores()
         {
-          if (_context.Score == null)
-          {
-              return NotFound();
-          }
-            var score = await _context.Score.FindAsync(id);
-
-            if (score == null)
-            {
-                return NotFound();
-            }
-
-            return score;
+          
+            return NoContent();
         }
 
         // PUT: api/Scores/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutScore(int id, Score score)
+        public async Task<IActionResult> ChangeScoreVisibility(int id)
         {
-            if (id != score.Id)
-            {
-                return BadRequest();
-            }
 
-            _context.Entry(score).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ScoreExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
 
             return NoContent();
         }
@@ -84,41 +56,31 @@ namespace FlappyBird.Controllers
         // POST: api/Scores
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<Score>> PostScore(Score score)
         {
-          if (_context.Score == null)
-          {
-              return Problem("Entity set 'FlappyBirdContext.Score'  is null.");
-          }
-            _context.Score.Add(score);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetScore", new { id = score.Id }, score);
-        }
-
-        // DELETE: api/Scores/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteScore(int id)
-        {
-            if (_context.Score == null)
+            if(_context.Score == null)
             {
-                return NotFound();
-            }
-            var score = await _context.Score.FindAsync(id);
-            if (score == null)
-            {
-                return NotFound();
+                return Problem("Entity set 'FlappyBirdContext.Score' is null");
             }
 
-            _context.Score.Remove(score);
-            await _context.SaveChangesAsync();
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            User? user = await _context.Users.FindAsync(userId);
 
-            return NoContent();
+            if (user != null)
+            {
+                score.Date = DateTime.Now;
+                score.User = user;
+                //user.Score.Add(score);
+
+                _context.Score.Add(score);
+                await _context.SaveChangesAsync();
+                return Ok(score);
+            }
+            return StatusCode(StatusCodes.Status400BadRequest,
+                new {Message = " Utilisateur non trouvé."});
         }
 
-        private bool ScoreExists(int id)
-        {
-            return (_context.Score?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        
     }
 }

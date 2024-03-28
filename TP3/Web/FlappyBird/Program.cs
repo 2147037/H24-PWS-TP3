@@ -35,12 +35,12 @@ builder.Services.AddAuthentication(options =>
 {
     options.SaveToken = true;
     options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+    options.TokenValidationParameters = new TokenValidationParameters()
     {
         ValidateAudience = true,
         ValidateIssuer = true,
         ValidAudience = "http://localhost:4200", //Client -> HTTP
-        ValidIssuer = "https://localhost:",
+        ValidIssuer = "http://localhost:5221",
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8
         .GetBytes("LooOOongue Phrase SiNoN Ça ne Marchera PaAaAAAaAas !"))
 

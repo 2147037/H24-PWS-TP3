@@ -6,6 +6,6 @@ namespace FlappyBird.Models
     public class User : IdentityUser
     {
         [JsonIgnore]
-        public virtual Score? Score { get; set; }
+        public virtual List<Score>? Score { get; set; }
     }
 }
