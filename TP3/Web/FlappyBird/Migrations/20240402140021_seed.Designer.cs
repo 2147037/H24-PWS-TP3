@@ -4,6 +4,7 @@ using FlappyBird.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FlappyBird.Migrations
 {
     [DbContext(typeof(FlappyBirdContext))]
-    partial class FlappyBirdContextModelSnapshot : ModelSnapshot
+    [Migration("20240402140021_seed")]
+    partial class seed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,8 +41,8 @@ namespace FlappyBird.Migrations
                     b.Property<int>("ScoreValue")
                         .HasColumnType("int");
 
-                    b.Property<double>("TimeInSeconds")
-                        .HasColumnType("float");
+                    b.Property<decimal>("TimeInSeconds")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
@@ -50,44 +52,6 @@ namespace FlappyBird.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Score");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Date = new DateTime(2024, 4, 2, 10, 6, 58, 462, DateTimeKind.Local).AddTicks(6145),
-                            IsPublic = false,
-                            ScoreValue = 14,
-                            TimeInSeconds = 3.21,
-                            UserId = "11111111-1111-1111-1111-111111111111"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Date = new DateTime(2024, 4, 2, 10, 6, 58, 462, DateTimeKind.Local).AddTicks(6183),
-                            IsPublic = true,
-                            ScoreValue = 144,
-                            TimeInSeconds = 32.109999999999999,
-                            UserId = "11111111-1111-1111-1111-111111111111"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Date = new DateTime(2024, 4, 2, 10, 6, 58, 462, DateTimeKind.Local).AddTicks(6188),
-                            IsPublic = true,
-                            ScoreValue = 432,
-                            TimeInSeconds = 70.230000000000004,
-                            UserId = "11111111-1111-1111-1111-111111111112"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Date = new DateTime(2024, 4, 2, 10, 6, 58, 462, DateTimeKind.Local).AddTicks(6190),
-                            IsPublic = false,
-                            ScoreValue = 1,
-                            TimeInSeconds = 12.43,
-                            UserId = "11111111-1111-1111-1111-111111111112"
-                        });
                 });
 
             modelBuilder.Entity("FlappyBird.Models.User", b =>
@@ -153,40 +117,6 @@ namespace FlappyBird.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "11111111-1111-1111-1111-111111111111",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "06893bf6-b54e-4644-90b4-a3928c2f8b2e",
-                            Email = "paul@mail.com",
-                            EmailConfirmed = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "PAUL@MAIL.COM",
-                            NormalizedUserName = "PAUL",
-                            PasswordHash = "AQAAAAEAACcQAAAAEPyvFp+/zuVBh/jfAAHd7CJ6nw4uKEjXfcLfLatkyAwwvvnMnBEXWuGpAEdlMsLfXA==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "f58caa05-676f-4744-a3a4-35a66d4446ea",
-                            TwoFactorEnabled = false,
-                            UserName = "Paul"
-                        },
-                        new
-                        {
-                            Id = "11111111-1111-1111-1111-111111111112",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "d23148b0-9677-4a89-84d0-196d4f706352",
-                            Email = "Ezat@mail.com",
-                            EmailConfirmed = false,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "EZAT@MAIL.COM",
-                            NormalizedUserName = "EZAT",
-                            PasswordHash = "AQAAAAEAACcQAAAAEL6OCX4/UTV9nvTSfQQHHUoL0ykwiNF73UuQ6bGNFWAi8XqGsHhGdgIayFZ0Ele+0g==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "41220729-136e-4c19-9913-afc6f50d0726",
-                            TwoFactorEnabled = false,
-                            UserName = "Ezat"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

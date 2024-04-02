@@ -19,8 +19,9 @@ export class ScoreComponent implements OnInit {
 
     this.userIsConnected = sessionStorage.getItem("token") != null;
 
-    this.myScores = await this.service.getMyScores();
     this.publicScores = await this.service.getPubScores();
+    this.myScores = await this.service.getMyScores();
+
 
 
   }
