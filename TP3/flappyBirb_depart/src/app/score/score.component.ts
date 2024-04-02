@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Score } from '../models/score';
+import { MyServiceService } from '../services/MyService.service';
 
 @Component({
   selector: 'app-score',
@@ -12,17 +13,24 @@ export class ScoreComponent implements OnInit {
   publicScores : Score[] = [];
   userIsConnected : boolean = false;
 
-  constructor() { }
+  constructor(public service : MyServiceService) { }
 
-  async ngOnInit() {
+  async ngOnInit() : Promise<void>{
 
     this.userIsConnected = sessionStorage.getItem("token") != null;
+
+    this.myScores = await this.service.getMyScores();
+    this.publicScores = await this.service.getPubScores();
 
 
   }
 
   async changeScoreVisibility(score : Score){
+    
+    if(score.id!=null)
+    this.service.changeVisibility(score.id);
 
+    score.isPublic = !score.isPublic;
 
   }
 
