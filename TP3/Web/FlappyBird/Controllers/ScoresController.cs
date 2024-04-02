@@ -9,6 +9,7 @@ using FlappyBird.Data;
 using FlappyBird.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 namespace FlappyBird.Controllers
 {
@@ -16,11 +17,13 @@ namespace FlappyBird.Controllers
     [ApiController]
     public class ScoresController : ControllerBase
     {
-        private readonly FlappyBirdContext _context;
+        readonly UserManager<User> UserManager;
+        private readonly ScoreService _scoreService;
 
-        public ScoresController(FlappyBirdContext context)
+        public ScoresController(UserManager<User> userManager, ScoreService scoreService)
         {
-            _context = context;
+            this.UserManager = userManager;
+            _scoreService = scoreService;
         }
 
         // GET: api/Scores
@@ -28,7 +31,7 @@ namespace FlappyBird.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Score>>> GetPublicScores()
         {
-            IEnumerable<Score> listeScore = await _context.Score.ToListAsync();
+            IEnumerable<Score> listeScore = await _scoreService.GetAll();
 
             return Ok(listeScore.Where(s => s.User != null).Where(x =>x.IsPublic).OrderByDescending(x=>x.ScoreValue).Take(10).Select(s => new ScoreDTO
             {
@@ -39,22 +42,20 @@ namespace FlappyBird.Controllers
                 Pseudo = s.User!.UserName,
                 TimeInSeconds = s.TimeInSeconds
             }));
-                //await _context.Score.Where(x=>x.IsPublic == true).OrderBy(x=>x.ScoreValue).Take(10).ToListAsync();
         }
 
         [HttpGet]
         [Authorize]
         public async Task<ActionResult<IEnumerable<Score>>> GetMyScores()
         {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            User? user = await _context.Users.FindAsync(userId);
+            User? user = await UserManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (user == null) return Unauthorized();
 
-            if (user != null)
-            {
-                return await _context.Score.Where(x=>x.User == user).ToListAsync();
-            }
+            if (_scoreService.IsScoreSetEmpty()) return StatusCode(StatusCodes.Status500InternalServerError,
+                new { Message = "Veuillez réessayer plus tard." });
 
-            return NoContent();
+            return user.Score;
+
         }
 
         // PUT: api/Scores/5
@@ -63,16 +64,30 @@ namespace FlappyBird.Controllers
         [Authorize]
         public async Task<IActionResult> ChangeScoreVisibility(int id)
         {
-            Score score = await _context.Score.FindAsync(id);
-            if (score != null)
+            User? user = await UserManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+
+            Score? score1 = await _scoreService.GetScore(id);
+
+            if(score1 == null)
             {
-                score.IsPublic = !score.IsPublic;
-                await _context.SaveChangesAsync();
-                return Ok();
+                return NotFound();
             }
 
+            if (user == null || score1.User != user)
+            {
+                return Unauthorized(new { Message = "Hey toche pas, c'est pas à toi !" });
+            }
 
-            return NoContent();
+            Score? nvScore = await _scoreService.UpdateScore(score1);
+
+
+            if (nvScore == null) return StatusCode(StatusCodes.Status500InternalServerError,
+                new { Message = "Veuillez réessayer plus tard." });
+               
+
+
+            return Ok( new { Message = " Score modifié", Score = nvScore});
         }
 
         // POST: api/Scores
@@ -81,26 +96,21 @@ namespace FlappyBird.Controllers
         [Authorize]
         public async Task<ActionResult<Score>> PostScore(Score score)
         {
-            if(_context.Score == null)
-            {
-                return Problem("Entity set 'FlappyBirdContext.Score' is null");
-            }
+            User? user = await UserManager.FindByIdAsync(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            User? user = await _context.Users.FindAsync(userId);
+            if (user == null) return Unauthorized();
 
-            if (user != null)
-            {
-                score.Date = DateTime.Now;
-                score.User = user;
-                //user.Score.Add(score);
+            score.User = user;
+            score.Date = DateTime.Now;
 
-                _context.Score.Add(score);
-                await _context.SaveChangesAsync();
-                return Ok(score);
-            }
-            return StatusCode(StatusCodes.Status400BadRequest,
-                new {Message = " Utilisateur non trouvé."});
+            Score? score1 = await _scoreService.CreateScore(score);
+
+            if (score1 == null) return StatusCode(StatusCodes.Status500InternalServerError,
+                new { Message = "Veuillez réessayer plus tard." });
+             
+            return Ok(score);
+
+            
         }
 
         

@@ -14,6 +14,8 @@ builder.Services.AddDbContext<FlappyBirdContext>(options =>
     options.UseLazyLoadingProxies();
 });
 
+builder.Services.AddScoped<ScoreService>();
+
 builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<FlappyBirdContext>();
 
 builder.Services.Configure<IdentityOptions>(options =>
